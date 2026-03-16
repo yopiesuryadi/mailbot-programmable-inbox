@@ -1,0 +1,8 @@
+interface:
+  display_name: "Mailbot Programmable Inbox"
+  short_description: "Build agent inbox workflows with mailbot"
+  brand_color: "#01696F"
+  default_prompt: "Use $mailbot-programmable-inbox to build a thread-aware agent email workflow with mailbot using the API, SDK, or MCP server."
+
+policy:
+  allow_implicit_invocation: true
