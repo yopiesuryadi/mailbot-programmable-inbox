@@ -1,5 +1,6 @@
 ---
 name: mailbot-programmable-inbox
+homepage: https://github.com/yopiesuryadi/mailbot-programmable-inbox
 description: >
   Integrate mailbot API for AI agent email automation. Create programmable
   inboxes, send and receive emails, track delivery events, and handle
