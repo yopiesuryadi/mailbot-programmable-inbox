@@ -16,52 +16,112 @@ Base URL: `https://getmail.bot/v1` · Sandbox domain: `@mailbot.id` · [API Docs
 
 ## Install as a skill
 
-This repo is a ready-to-use skill for **Claude Code**, **Cowork**, and any tool that follows the [Agent Skills](https://agentskills.io) open standard. Once installed, Claude knows how to use mailbot automatically — create inboxes, send email, track events, the full API.
+This repo follows the [Agent Skills](https://agentskills.io) open standard. One `SKILL.md`, works across 40+ agentic platforms.
+
+### npx skills (universal — 40+ agents)
+
+The fastest way. Supports Claude Code, Cursor, Windsurf, Codex, Copilot, Cline, Roo Code, and [40+ more](https://github.com/vercel-labs/skills).
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox
+```
+
+Install to a specific agent:
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent claude-code
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent cursor
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent codex
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent windsurf
+```
+
+Global install (available in all projects):
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --global
+```
 
 ### Claude Code
 
-Personal skill (available in all your projects):
+Personal skill (all your projects):
 
 ```bash
 git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git ~/.claude/skills/mailbot-programmable-inbox
 ```
 
-Project skill (shared with your team via git):
+Project skill (shared with team via git):
 
 ```bash
 git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .claude/skills/mailbot-programmable-inbox
 ```
 
-After install, Claude Code picks it up automatically. Ask anything about email — Claude loads the skill and knows the full mailbot API.
-
-You can also invoke it directly:
+Then ask Claude anything about email, or invoke directly:
 
 ```
 /mailbot-programmable-inbox build an email-based support workflow for my app
 ```
 
-Or use it with `/batch` to parallelize email-related tasks across your codebase:
+Works with `/batch` for parallel tasks:
 
 ```
 /batch add mailbot email notifications to all user-facing endpoints
 ```
 
+### Codex (OpenAI)
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent codex
+```
+
+Or manual:
+
+```bash
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .codex/skills/mailbot-programmable-inbox
+```
+
+### Cursor
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent cursor
+```
+
+Or manual — add to `.cursor/skills/`:
+
+```bash
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .cursor/skills/mailbot-programmable-inbox
+```
+
+### Windsurf
+
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent windsurf
+```
+
+### OpenClaw
+
+```bash
+clawhub install mailbot-programmable-inbox
+```
+
+Or manual:
+
+```bash
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git ./skills/mailbot-programmable-inbox
+```
+
 ### Cowork (Claude Desktop)
 
-The skill works with Cowork mode out of the box. Drop it in your Cowork skills directory or use it via dispatch from your phone — Claude runs the email task on your desktop.
+Works out of the box via Cowork skills directory. Use dispatch from your phone — Claude runs the email task on your desktop.
 
-### OpenClaw / Agent Skills standard
+### Any other agent
 
-This repo follows the [Agent Skills](https://agentskills.io) directory structure:
+If your agent reads `SKILL.md` files, just clone this repo into its skills directory:
 
-```
-SKILL.md              → Skill entrypoint (frontmatter + instructions)
-agents/openai.yaml    → OpenAI-compatible agent config
-references/           → Supporting docs (loaded on demand, not upfront)
-scripts/              → Executable helpers
+```bash
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <your-agent-skills-dir>/mailbot-programmable-inbox
 ```
 
-Any tool that reads `SKILL.md` can use this skill: Claude Code, Cowork, OpenClaw, or your own agent framework.
+The `SKILL.md` is self-contained. References in `references/` are loaded on demand.
 
 ---
 
@@ -228,7 +288,7 @@ scripts/
   mailbot-helper.py   → CLI helper for common tasks
 ```
 
-The `SKILL.md` is the entrypoint. Reference files in `references/` are loaded by Claude only when needed — they don't bloat the context window on every invocation.
+The `SKILL.md` is the entrypoint. Reference files in `references/` are loaded by the agent only when needed — they don't bloat the context window on every invocation.
 
 ## Links
 
