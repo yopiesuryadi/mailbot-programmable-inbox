@@ -8,8 +8,8 @@ npm install @yopiesuryadi/mailbot-sdk
 
 Base URL:
 
-- default constructor base: `https://beta.mailbot.id`
-- effective API base: `https://beta.mailbot.id/v1`
+- default constructor base: `https://getmail.bot`
+- effective API base: `https://getmail.bot/v1`
 
 ## Setup
 
@@ -18,8 +18,24 @@ import { MailBot } from '@yopiesuryadi/mailbot-sdk';
 
 const client = new MailBot({
   apiKey: process.env.MAILBOT_API_KEY!,
-  baseUrl: 'https://beta.mailbot.id',
+  baseUrl: 'https://getmail.bot',
 });
+```
+
+## Account
+
+```ts
+const account = await client.account.get();
+await client.account.update({ name: 'New Name' });
+```
+
+## API Keys
+
+```ts
+const newKey = await client.apiKeys.create({ name: 'ci-pipeline' });
+console.log(newKey.key); // mb_... — only shown once
+const keys = await client.apiKeys.list();
+await client.apiKeys.delete(keys.data[0].id);
 ```
 
 ## Inboxes
@@ -32,6 +48,7 @@ const inbox = await client.inboxes.create({
 
 const inboxes = await client.inboxes.list();
 const oneInbox = await client.inboxes.get(inbox.id);
+await client.inboxes.update(inbox.id, { display_name: 'Support v2' });
 await client.inboxes.delete(inbox.id);
 ```
 
@@ -112,9 +129,16 @@ await client.compliance.check({ domain: 'example.com' });
 await client.compliance.readiness(inbox.id);
 ```
 
+## Audit
+
+```ts
+const auditEvents = await client.audit.list({ limit: 50 });
+```
+
 ## Usage and engagement
 
 ```ts
 await client.usage.get();
+await client.usage.daily();
 await client.engagement.summary({ period: '7d' });
 ```

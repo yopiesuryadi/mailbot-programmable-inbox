@@ -8,7 +8,7 @@ pip install mailbot-sdk
 
 Base URL:
 
-- default base: `https://beta.mailbot.id/v1`
+- default base: `https://getmail.bot/v1`
 
 ## Setup
 
@@ -18,8 +18,24 @@ from mailbot import MailBot
 
 client = MailBot(
     api_key=os.environ["MAILBOT_API_KEY"],
-    base_url="https://beta.mailbot.id/v1",
+    base_url="https://getmail.bot/v1",
 )
+```
+
+## Account
+
+```python
+account = client.account.get()
+client.account.update(name="New Name")
+```
+
+## API Keys
+
+```python
+new_key = client.api_keys.create(name="ci-pipeline")
+print(new_key["key"])  # mb_... — only shown once
+keys = client.api_keys.list()
+client.api_keys.delete(keys["data"][0]["id"])
 ```
 
 ## Inboxes
@@ -32,6 +48,7 @@ inbox = client.inboxes.create(
 
 inboxes = client.inboxes.list()
 one_inbox = client.inboxes.get(inbox["id"])
+client.inboxes.update(inbox["id"], display_name="Support v2")
 client.inboxes.delete(inbox["id"])
 ```
 
@@ -97,9 +114,16 @@ client.compliance.check("example.com")
 client.compliance.readiness(inbox["id"])
 ```
 
+## Audit
+
+```python
+audit_events = client.audit.list(limit=50)
+```
+
 ## Usage and engagement
 
 ```python
 client.usage.get()
+client.usage.daily()
 client.engagement.summary(period="7d")
 ```

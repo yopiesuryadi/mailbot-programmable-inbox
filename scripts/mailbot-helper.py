@@ -21,7 +21,7 @@ def make_client() -> MailBot:
     if not api_key:
         raise SystemExit("MAILBOT_API_KEY is required")
 
-    base_url = os.environ.get("MAILBOT_BASE_URL", "https://beta.mailbot.id/v1")
+    base_url = os.environ.get("MAILBOT_BASE_URL", "https://getmail.bot/v1")
     return MailBot(api_key=api_key, base_url=base_url)
 
 

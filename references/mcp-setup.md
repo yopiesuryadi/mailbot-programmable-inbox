@@ -15,7 +15,7 @@ npx @yopiesuryadi/mailbot-mcp
 Environment:
 
 - `MAILBOT_API_KEY` required
-- `MAILBOT_API_URL` optional, defaults to `https://beta.mailbot.id`
+- `MAILBOT_API_URL` optional, defaults to `https://getmail.bot`
 
 ## Claude Desktop Config
 
@@ -72,3 +72,5 @@ Use the Node or Python SDK when the workflow also needs:
 - wait-for polling
 - label updates
 - compliance and readiness checks
+- API key management
+- audit log inspection

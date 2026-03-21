@@ -23,10 +23,11 @@ It is purpose-built for agent communication workflows, not a wrapper over a huma
 ## What is mailbot
 
 - programmable email infrastructure for AI agents
-- one API for inboxes, messages, threads, usage, engagement, and events
+- one API for auth, account, API keys, inboxes, messages, threads, webhooks, engagement, compliance, audit, and usage
 - sandbox-first onboarding with `@mailbot.id`
 - custom domain support when a workflow is production-ready
 - proprietary MTA with `99/100 deliverability`
+- security-hardened: SSRF protection on webhooks, rate-limit fail-closed, strict access gating
 
 Use `mailbot` when the job is:
 
@@ -35,6 +36,8 @@ Use `mailbot` when the job is:
 - trigger actions from inbound email
 - observe delivery and engagement
 - replay webhook events for debugging or recovery
+- manage API keys programmatically
+- audit all email activity
 
 ## Quick Start
 
@@ -72,10 +75,48 @@ Model the system like this:
 
 Beta defaults:
 
-- base URL: `https://beta.mailbot.id/v1`
+- base URL: `https://getmail.bot/v1`
 - sandbox domain: `@mailbot.id`
+- sandbox address pattern: `{username}--{accountShortId}@mailbot.id`
 - first success should happen on the shared sandbox path
 - custom domain setup comes later
+
+## Authentication
+
+mailbot uses email-based OTP signup with API key authentication.
+
+### Signup flow
+
+1. `POST /v1/auth/signup` with name and email — sends a 6-digit verification code
+2. `POST /v1/auth/verify` with email and code — returns account details + API key (`mb_` prefix)
+3. Use the API key as Bearer token for all subsequent requests
+
+Node.js:
+
+```ts
+// After signup, use the API key for all requests:
+const client = new MailBot({
+  apiKey: process.env.MAILBOT_API_KEY!,
+  baseUrl: 'https://getmail.bot',
+});
+```
+
+Python:
+
+```python
+client = MailBot(
+    api_key=os.environ["MAILBOT_API_KEY"],
+    base_url="https://getmail.bot/v1",
+)
+```
+
+### API Key management
+
+- `POST /v1/api-keys` — create additional API keys
+- `GET /v1/api-keys` — list active keys (prefix only, secret never returned after creation)
+- `DELETE /v1/api-keys/:id` — revoke a key
+
+Keys are hashed with argon2 at rest. The full key is only shown once at creation time.
 
 ## Operations
 
@@ -90,7 +131,7 @@ import { MailBot } from '@yopiesuryadi/mailbot-sdk';
 
 const client = new MailBot({
   apiKey: process.env.MAILBOT_API_KEY!,
-  baseUrl: 'https://beta.mailbot.id',
+  baseUrl: 'https://getmail.bot',
 });
 
 const inbox = await client.inboxes.create({
@@ -109,7 +150,7 @@ import os
 
 client = MailBot(
     api_key=os.environ["MAILBOT_API_KEY"],
-    base_url="https://beta.mailbot.id/v1",
+    base_url="https://getmail.bot/v1",
 )
 
 inbox = client.inboxes.create(
@@ -232,6 +273,7 @@ Use webhooks when an agent should react in real time.
 Common event types:
 
 - `message.sent`
+- `message.received`
 - `message.delivered`
 - `message.opened`
 - `message.clicked`
@@ -256,6 +298,8 @@ webhook = client.webhooks.create(
 )
 ```
 
+Webhook URLs are validated against SSRF (private IP ranges are blocked). Redirect following is limited to 1 hop with re-validation.
+
 Replay is a key workflow:
 
 - if a downstream webhook consumer fails
@@ -268,6 +312,53 @@ Node.js:
 const threadEvents = await client.events.list(threadId);
 await client.events.replay(threadEvents.data[0].id, 'https://example.com/replay-target');
 ```
+
+## Engagement Tracking
+
+Per-message engagement tracking is built in:
+
+- `GET /v1/engagement/stats` — delivery, open, click, bounce rates over a period
+- Per-message engagement fields: `delivered_at`, `opened_count`, `clicked_count`, `bounced_at`
+
+Node.js:
+
+```ts
+const stats = await client.engagement.summary({ period: '7d' });
+```
+
+Python:
+
+```python
+stats = client.engagement.summary(period="7d")
+```
+
+## Audit Log
+
+All email activity is logged for compliance and debugging:
+
+- `GET /v1/audit` — list audit events (`message.received`, `message.sent`, etc.)
+- Events include actor, action, target, timestamp, and metadata
+
+## Usage
+
+Monitor volume and rate health:
+
+- `GET /v1/usage` — current period usage summary
+- `GET /v1/usage/daily` — daily breakdown
+
+Node.js:
+
+```ts
+const usage = await client.usage.get();
+```
+
+Python:
+
+```python
+usage = client.usage.get()
+```
+
+Sandbox limits: 250 messages/day, 25/minute burst guard.
 
 ## Security: Prompt Injection Protection
 
@@ -346,6 +437,8 @@ Use SDK or direct API alongside MCP when the workflow also needs:
 - polling with wait-for semantics
 - label management
 - compliance readiness checks
+- API key management
+- audit log inspection
 
 ## Compliance and Deliverability
 
@@ -397,6 +490,25 @@ readiness = client.compliance.readiness(inbox["id"])
 - use email as an intake interface
 - convert inbound messages into structured actions
 - require human review on risky workflows
+
+## API Endpoints Summary
+
+| Category | Endpoints |
+|----------|-----------|
+| Auth | `POST /auth/signup`, `POST /auth/verify` |
+| Account | `GET /account`, `PATCH /account`, `DELETE /account` |
+| API Keys | `POST /api-keys`, `GET /api-keys`, `DELETE /api-keys/:id` |
+| Inboxes | `POST /inboxes`, `GET /inboxes`, `GET /inboxes/:id`, `PATCH /inboxes/:id`, `DELETE /inboxes/:id` |
+| Domains | `GET /domains`, `GET /domains/:id` |
+| Messages | `POST /inboxes/:id/messages`, `GET /inboxes/:id/messages`, `GET /inboxes/:id/messages/:msgId` |
+| Threads | `GET /inboxes/:id/threads`, `GET /inboxes/:id/threads/:threadId` |
+| Webhooks | `POST /webhooks`, `GET /webhooks`, `DELETE /webhooks/:id` |
+| Engagement | `GET /engagement/stats` |
+| Compliance | `GET /compliance/check`, `GET /compliance/readiness/:inboxId` |
+| Audit | `GET /audit` |
+| Usage | `GET /usage`, `GET /usage/daily` |
+
+All endpoints prefixed with `/v1`. Full OpenAPI spec at `https://getmail.bot/docs`.
 
 ## Use References and Scripts
 
