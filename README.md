@@ -1,163 +1,33 @@
 # mailbot — Programmable Email for AI Agents
 
-**mailbot** gives your AI agent a real email address. Create inboxes, send and receive emails, track every delivery event, and replay webhooks — one API, one line to install.
-
-Built for the world where agents don't just chat — they email.
-
-```bash
-npm install @yopiesuryadi/mailbot-sdk    # Node.js
-pip install mailbot-sdk                   # Python
-npm install -g @yopiesuryadi/mailbot-mcp  # MCP Server for Claude
-```
-
-Base URL: `https://getmail.bot/v1` · Sandbox domain: `@mailbot.id` · [API Docs](https://getmail.bot/docs) · [Dashboard](https://getmail.bot/dashboard)
-
----
-
-## What's New
-
-### v0.3.0 — March 24, 2026
-
-- **Domain Management API** — Add custom domains, verify SPF/DKIM/DMARC, and delete domains via API. Agents can now fully onboard users without touching the dashboard.
-- **Cloudflare DNS Auto-Connect** — Provide a Cloudflare API token and mailbot auto-provisions all 3 DNS records (SPF, DKIM, DMARC). Zone ID is auto-detected from domain name. One credential, zero manual DNS.
-- **Agent-First Onboarding** — Full setup in 4 API calls: add domain → connect Cloudflare → wait for verification → create inbox. No dashboard needed.
-- **Integration Guide** — New `/connect` page in dashboard with step-by-step guides for cURL, Node.js, Python, and MCP Server.
-
----
-
-## Install as a skill
-
-This repo follows the [Agent Skills](https://agentskills.io) open standard. One `SKILL.md`, works across 40+ agentic platforms.
-
-### npx skills (universal — 40+ agents)
-
-The fastest way. Supports Claude Code, Cursor, Windsurf, Codex, Copilot, Cline, Roo Code, and [40+ more](https://github.com/vercel-labs/skills).
+Give your AI agent a real email address in one API call. Send, receive, reply in-thread, track delivery, and replay webhooks — no IMAP, no Gmail, no hacks.
 
 ```bash
 npx skills add yopiesuryadi/mailbot-programmable-inbox
 ```
 
-Install to a specific agent:
-
-```bash
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent claude-code
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent cursor
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent codex
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent windsurf
-```
-
-Global install (available in all projects):
-
-```bash
-npx skills add yopiesuryadi/mailbot-programmable-inbox --global
-```
-
-### Claude Code
-
-Personal skill (all your projects):
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git ~/.claude/skills/mailbot-programmable-inbox
-```
-
-Project skill (shared with team via git):
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .claude/skills/mailbot-programmable-inbox
-```
-
-Then ask Claude anything about email, or invoke directly:
-
-```
-/mailbot-programmable-inbox build an email-based support workflow for my app
-```
-
-Works with `/batch` for parallel tasks:
-
-```
-/batch add mailbot email notifications to all user-facing endpoints
-```
-
-### Codex (OpenAI)
-
-```bash
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent codex
-```
-
-Or manual:
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .codex/skills/mailbot-programmable-inbox
-```
-
-### Cursor
-
-```bash
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent cursor
-```
-
-Or manual — add to `.cursor/skills/`:
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .cursor/skills/mailbot-programmable-inbox
-```
-
-### Windsurf
-
-```bash
-npx skills add yopiesuryadi/mailbot-programmable-inbox --agent windsurf
-```
-
-### OpenClaw
-
-```bash
-clawhub install mailbot-programmable-inbox
-```
-
-Or manual:
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git ./skills/mailbot-programmable-inbox
-```
-
-### Cowork (Claude Desktop)
-
-Works out of the box via Cowork skills directory. Use dispatch from your phone — Claude runs the email task on your desktop.
-
-### Any other agent
-
-If your agent reads `SKILL.md` files, just clone this repo into its skills directory:
-
-```bash
-git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <your-agent-skills-dir>/mailbot-programmable-inbox
-```
-
-The `SKILL.md` is self-contained. References in `references/` are loaded on demand.
+Works with Claude Code, Cursor, Codex, Windsurf, Copilot, Cline, Roo Code, and [40+ more agents](https://github.com/vercel-labs/skills).
 
 ---
 
-## Why this exists
+## Why mailbot
 
-Every email API today — SendGrid, SES, Postmark — assumes a human writes the email. They're built for marketing blasts and transactional receipts.
+Every email API today — SendGrid, SES, Postmark — assumes a human writes the email. They're built for marketing blasts and transactional receipts. AI agents need something different.
 
-But AI agents need email as a first-class interface. A support bot needs its own inbox. A scheduling agent needs to reply in-thread. A CI pipeline needs to send, wait for a reply, and assert. None of that works well when you're bolting agent logic onto a human email service.
+| What agents need | SendGrid / SES / Postmark | mailbot |
+|---|---|---|
+| Dedicated inbox per agent | No — shared sender | Yes — `support-bot@mailbot.id` in one call |
+| Reply in same thread | Manual `In-Reply-To` headers | Automatic — just call `reply()` |
+| Wait for inbound reply | Poll IMAP or build webhook infra | Built-in `waitFor()` with timeout |
+| Replay failed webhooks | Re-trigger from logs manually | One API call, any URL |
+| Works without DNS setup | Need domain verification | Instant sandbox `@mailbot.id` |
+| Custom domain when ready | Yes | Yes — with auto DNS via Cloudflare API |
 
-**mailbot is email infrastructure purpose-built for agents:**
+---
 
-- **One inbox per agent.** Create `support-bot@mailbot.id` in one API call. Each agent gets its own address, its own threads, its own engagement data.
-- **Inbound without polling.** Replies arrive via webhook, not IMAP polling. Your agent reacts in real time.
-- **Thread continuity by default.** Reply to a message and mailbot preserves the thread. Your agent never loses conversational context.
-- **Event replay for recovery.** Webhook consumer went down? Replay any event to any URL. Deterministic recovery, not prayer.
-- **Security-first.** SSRF protection on webhook URLs, rate-limit fail-closed when Redis is down, API keys hashed with argon2.
-- **Compliance built in.** SPF, DKIM, DMARC readiness checks. Inbox verification before you send from a custom domain.
+## 30-second start
 
-## Five-minute start
-
-### 1. Get an API key
-
-Sign up at [getmail.bot](https://getmail.bot) — email OTP, no credit card. You get an `mb_` prefixed API key.
-
-### 2. Create an inbox
+Sign up at [getmail.bot](https://getmail.bot) — email OTP, no credit card.
 
 ```ts
 import { MailBot } from '@yopiesuryadi/mailbot-sdk';
@@ -167,40 +37,29 @@ const client = new MailBot({
   baseUrl: 'https://getmail.bot',
 });
 
+// Create an inbox
 const inbox = await client.inboxes.create({
   username: 'support-bot',
   display_name: 'Support Bot',
 });
-
-console.log(inbox.address);
 // → support-bot--abc123@mailbot.id
-```
 
-### 3. Send an email
-
-```ts
-const sent = await client.messages.send({
+// Send an email
+await client.messages.send({
   inboxId: inbox.id,
   to: ['customer@example.com'],
   subject: 'Your request has been received',
   bodyText: 'We are looking into it.',
-  bodyHtml: '<p>We are looking into it.</p>',
 });
-```
 
-### 4. Reply in-thread
-
-```ts
+// Reply in-thread (thread is preserved automatically)
 await client.messages.reply({
   inboxId: inbox.id,
   messageId: inboundMessage.id,
   bodyText: 'Issue resolved. Closing this ticket.',
 });
-```
 
-### 5. Wait for inbound (great for CI)
-
-```ts
+// Wait for a reply (great for CI and testing)
 const reply = await client.messages.waitFor({
   inboxId: inbox.id,
   direction: 'inbound',
@@ -211,17 +70,44 @@ const reply = await client.messages.waitFor({
 
 Python equivalents for all of the above are in [SKILL.md](SKILL.md).
 
-## Use with Claude
+---
 
-Three ways to give Claude email capabilities:
+## Install
 
-### Option A: Install the skill (recommended)
+### One command (40+ agents)
 
-Clone this repo into your Claude Code skills directory (see [Install as a skill](#install-as-a-skill) above). Claude automatically knows the full mailbot API and can write integration code, debug email flows, and build workflows.
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox
+```
 
-### Option B: MCP Server (direct tool execution)
+Target a specific agent:
 
-The MCP server gives Claude direct tool access — it can create inboxes and send email without writing code.
+```bash
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent claude-code
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent cursor
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent codex
+npx skills add yopiesuryadi/mailbot-programmable-inbox --agent windsurf
+```
+
+### Claude Code (manual)
+
+```bash
+# Personal (all projects)
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git ~/.claude/skills/mailbot-programmable-inbox
+
+# Per-project (shared with team)
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git .claude/skills/mailbot-programmable-inbox
+```
+
+Then just ask Claude:
+
+```
+/mailbot-programmable-inbox build an email-based support workflow for my app
+```
+
+### MCP Server (direct tool execution)
+
+Give Claude the ability to send and receive emails directly — no code needed.
 
 ```json
 {
@@ -237,15 +123,21 @@ The MCP server gives Claude direct tool access — it can create inboxes and sen
 
 Then tell Claude:
 
-> Create an inbox for support, send a welcome email to customer@example.com, then show me the thread and engagement stats.
+> Create an inbox for support, send a welcome email to customer@example.com, then show me the thread.
 
-16 tools included: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`, `add_domain`, `verify_domain`, `connect_cloudflare`, `list_domains`.
+12 tools: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`.
 
-### Option C: Both
+### Other agents
 
-Install the skill AND the MCP server. Claude uses the skill for knowledge (API patterns, SDK usage, security best practices) and the MCP server for direct execution (actually sending emails). This is the most powerful setup.
+Codex, Cursor, Windsurf, OpenClaw, or any agent that reads `SKILL.md` — just clone into its skills directory:
 
-## What agents build with this
+```bash
+git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <skills-dir>/mailbot-programmable-inbox
+```
+
+---
+
+## What people build with this
 
 **Support automation** — Receive email → classify with LLM → reply in-thread. No ticket system for v1.
 
@@ -255,52 +147,38 @@ Install the skill AND the MCP server. Claude uses the skill for knowledge (API p
 
 **Operational intake** — Email as intake interface. Inbound → structured action. Human review on risky ops.
 
-## API surface
+---
+
+## API at a glance
 
 12 endpoint categories, all under `/v1`:
 
-| Category | Key endpoints |
-|----------|--------------|
-| **Auth** | OTP signup + verify → API key |
-| **Account** | Get, update, delete |
-| **API Keys** | Create, list, revoke (argon2 hashed) |
-| **Inboxes** | CRUD + display name update |
-| **Domains** | Create, list, get, verify, delete, Cloudflare auto-connect |
-| **Messages** | Send, list, get, reply, search, labels, wait-for |
-| **Threads** | List, get (full conversation timeline) |
-| **Webhooks** | Create, list, delete (SSRF-protected) |
-| **Engagement** | Delivery/open/click/bounce stats |
-| **Compliance** | SPF/DKIM/DMARC check, inbox readiness |
+| Category | What it does |
+|----------|-------------|
+| **Auth** | OTP signup → API key (no credit card) |
+| **Inboxes** | Create, list, update, delete |
+| **Messages** | Send, list, get, reply, search, label, wait-for |
+| **Threads** | Full conversation timeline |
+| **Domains** | Add custom domain, verify SPF/DKIM/DMARC |
+| **Webhooks** | Real-time events, SSRF-protected |
+| **Engagement** | Delivery, open, click, bounce rates |
+| **Compliance** | DNS readiness checks |
 | **Audit** | Full event log |
-| **Usage** | Volume summary + daily breakdown |
 
-Sandbox: 250 messages/day, 25/minute burst. Production: custom domain, higher limits.
+Sandbox: 250 messages/day, 25/minute burst. Custom domain unlocks higher limits.
 
-## Security for agent developers
+Full reference in [SKILL.md](SKILL.md) · [API Docs](https://getmail.bot/docs)
 
-Email content is untrusted input. Always:
+---
 
-1. Allowlist trusted senders before parsing commands from email body
-2. Never let arbitrary senders trigger destructive actions
-3. Require human-in-the-loop for high-impact operations
+## Security
 
-Code patterns in [SKILL.md → Security section](SKILL.md#security-prompt-injection-protection).
+Email content is untrusted input. The skill includes patterns for prompt injection protection — allowlist trusted senders, gate destructive actions, require human review. Details in [SKILL.md → Security section](SKILL.md#security-prompt-injection-protection).
 
-## Repo contents
+Infrastructure: API keys hashed with argon2, webhook URLs validated against SSRF, rate limits fail-closed when Redis is down.
 
-```
-SKILL.md              → Skill entrypoint (frontmatter + full integration guide)
-agents/openai.yaml    → OpenAI-compatible agent config
-references/
-  node-sdk.md         → Node.js SDK reference (loaded on demand)
-  python-sdk.md       → Python SDK reference (loaded on demand)
-  mcp-setup.md        → MCP Server setup for Claude Desktop
-scripts/
-  mailbot-helper.py   → CLI helper for common tasks
-```
-
-The `SKILL.md` is the entrypoint. Reference files in `references/` are loaded by the agent only when needed — they don't bloat the context window on every invocation.
+---
 
 ## Links
 
-[API Docs](https://getmail.bot/docs) · [Dashboard](https://getmail.bot/dashboard) · [npm](https://www.npmjs.com/package/@yopiesuryadi/mailbot-sdk) · [PyPI](https://pypi.org/project/mailbot-sdk/) · [MCP Server](https://www.npmjs.com/package/@yopiesuryadi/mailbot-mcp)
+[API Docs](https://getmail.bot/docs) · [Dashboard](https://getmail.bot/dashboard) · [npm SDK](https://www.npmjs.com/package/@yopiesuryadi/mailbot-sdk) · [PyPI SDK](https://pypi.org/project/mailbot-sdk/) · [MCP Server](https://www.npmjs.com/package/@yopiesuryadi/mailbot-mcp)
