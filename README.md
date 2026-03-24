@@ -10,6 +10,14 @@ Works with Claude Code, Cursor, Codex, Windsurf, Copilot, Cline, Roo Code, and [
 
 ---
 
+## What's New
+
+**v0.3.0** — Custom domain management via API (add, verify SPF/DKIM/DMARC, delete). New `/connect` integration guide in dashboard with step-by-step setup for cURL, Node.js, Python, and MCP Server.
+
+**v0.2.0** — Skill published on [Agent Skills](https://agentskills.io) open standard. One-command install for 40+ agents. MCP Server with 12 tools. Node.js and Python SDK.
+
+---
+
 ## Why mailbot
 
 Every email API today — SendGrid, SES, Postmark — assumes a human writes the email. They're built for marketing blasts and transactional receipts. AI agents need something different.
