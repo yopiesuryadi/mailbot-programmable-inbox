@@ -14,6 +14,20 @@ Base URL: `https://getmail.bot/v1` · Sandbox domain: `@mailbot.id` · [API Docs
 
 ---
 
+## What's New
+
+### v0.3.0 — March 24, 2026
+
+- **Domain Management API** — Add custom domains, verify SPF/DKIM/DMARC, and delete domains via API. Agents can now fully onboard users without touching the dashboard.
+- **Cloudflare DNS Auto-Connect** — Provide a Cloudflare API token and mailbot auto-provisions all 3 DNS records (SPF, DKIM, DMARC). Zone ID is auto-detected from domain name. One credential, zero manual DNS.
+- **Agent-First Onboarding** — Full setup in 4 API calls: add domain → connect Cloudflare → wait for verification → create inbox. No dashboard needed.
+- **3-Tier Abuse Scanning** — Upgraded from basic regex to weighted scoring system: PhishTank URL database (Redis-cached, hourly sync), 7-signal content scoring (regex, URL shortener, href mismatch, homoglyphs, etc.), and spray pattern detection for identical body sent to many recipients.
+- **16 MCP Tools** — Added `add_domain`, `verify_domain`, `connect_cloudflare`, `list_domains` to the MCP server.
+- **Integration Guide** — New `/connect` page in dashboard with step-by-step guides for cURL, Node.js, Python, and MCP Server.
+- **Dashboard UX Cleanup** — Merged Dashboard + Usage into tabbed page, merged Compliance into Domains page, reduced sidebar from 11 to 10 items, added DNS provider quick links (Cloudflare, GoDaddy, Namecheap, etc.).
+
+---
+
 ## Install as a skill
 
 This repo follows the [Agent Skills](https://agentskills.io) open standard. One `SKILL.md`, works across 40+ agentic platforms.
@@ -228,7 +242,7 @@ Then tell Claude:
 
 > Create an inbox for support, send a welcome email to customer@example.com, then show me the thread and engagement stats.
 
-12 tools included: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`.
+16 tools included: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`, `add_domain`, `verify_domain`, `connect_cloudflare`, `list_domains`.
 
 ### Option C: Both
 
@@ -254,7 +268,7 @@ Install the skill AND the MCP server. Claude uses the skill for knowledge (API p
 | **Account** | Get, update, delete |
 | **API Keys** | Create, list, revoke (argon2 hashed) |
 | **Inboxes** | CRUD + display name update |
-| **Domains** | List, get (sandbox auto-provisioned) |
+| **Domains** | Create, list, get, verify, delete, Cloudflare auto-connect |
 | **Messages** | Send, list, get, reply, search, labels, wait-for |
 | **Threads** | List, get (full conversation timeline) |
 | **Webhooks** | Create, list, delete (SSRF-protected) |

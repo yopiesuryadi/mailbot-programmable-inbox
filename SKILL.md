@@ -423,6 +423,10 @@ Current packaged tools:
 - `replay_event`
 - `get_usage`
 - `get_engagement_stats`
+- `add_domain`
+- `verify_domain`
+- `connect_cloudflare`
+- `list_domains`
 
 Example prompt:
 
@@ -439,6 +443,86 @@ Use SDK or direct API alongside MCP when the workflow also needs:
 - compliance readiness checks
 - API key management
 - audit log inspection
+
+## Domain Management
+
+mailbot supports two modes: shared sandbox domain (`@mailbot.id`) for instant onboarding, and custom domains for production.
+
+### Add a custom domain
+
+Node.js:
+
+```ts
+const domain = await client.domains.create({ domain: 'example.com' });
+// Returns: { id, domain, status: 'pending', dns_records: [...] }
+```
+
+Python:
+
+```python
+domain = client.domains.create(domain="example.com")
+```
+
+### Auto-connect DNS via Cloudflare
+
+Instead of manually copying SPF/DKIM/DMARC records, provide a Cloudflare API token and mailbot provisions all DNS records automatically. Zone ID is auto-detected from the domain name.
+
+Node.js:
+
+```ts
+const result = await client.domains.connectCloudflare(domain.id, {
+  api_token: process.env.CLOUDFLARE_API_TOKEN!,
+});
+// DNS records created automatically. Verification may take 1-5 minutes.
+```
+
+Python:
+
+```python
+result = client.domains.connect_cloudflare(
+    domain["id"],
+    api_token=os.environ["CLOUDFLARE_API_TOKEN"],
+)
+```
+
+The Cloudflare API token needs `Zone.DNS.Edit` + `Zone.Zone.Read` permissions. Create one at `dash.cloudflare.com/profile/api-tokens`.
+
+### Verify domain DNS
+
+```ts
+const verification = await client.domains.verify(domain.id);
+// Returns: { spf_verified, dkim_verified, dmarc_verified, status }
+```
+
+### Full agent-first onboarding (no dashboard needed)
+
+```ts
+// 1. Add domain
+const domain = await client.domains.create({ domain: 'example.com' });
+
+// 2. Auto-provision DNS (Cloudflare users)
+await client.domains.connectCloudflare(domain.id, {
+  api_token: process.env.CLOUDFLARE_API_TOKEN!,
+});
+
+// 3. Wait for DNS propagation + verify
+let verified = false;
+while (!verified) {
+  await new Promise(r => setTimeout(r, 30_000));
+  const check = await client.domains.verify(domain.id);
+  verified = check.spf_verified && check.dkim_verified && check.dmarc_verified;
+}
+
+// 4. Create inbox on custom domain
+const inbox = await client.inboxes.create({
+  username: 'support',
+  domain: 'example.com',
+  display_name: 'Support',
+});
+// Now sending from support@example.com
+```
+
+For non-Cloudflare users, get the DNS records from `domain.dns_records` and add them manually to your DNS provider, then call verify.
 
 ## Compliance and Deliverability
 
@@ -499,7 +583,7 @@ readiness = client.compliance.readiness(inbox["id"])
 | Account | `GET /account`, `PATCH /account`, `DELETE /account` |
 | API Keys | `POST /api-keys`, `GET /api-keys`, `DELETE /api-keys/:id` |
 | Inboxes | `POST /inboxes`, `GET /inboxes`, `GET /inboxes/:id`, `PATCH /inboxes/:id`, `DELETE /inboxes/:id` |
-| Domains | `GET /domains`, `GET /domains/:id` |
+| Domains | `POST /domains`, `GET /domains`, `GET /domains/:id`, `POST /domains/:id/verify`, `DELETE /domains/:id`, `POST /domains/:id/cloudflare/connect`, `DELETE /domains/:id/cloudflare`, `GET /domains/:id/cloudflare` |
 | Messages | `POST /inboxes/:id/messages`, `GET /inboxes/:id/messages`, `GET /inboxes/:id/messages/:msgId` |
 | Threads | `GET /inboxes/:id/threads`, `GET /inboxes/:id/threads/:threadId` |
 | Webhooks | `POST /webhooks`, `GET /webhooks`, `DELETE /webhooks/:id` |

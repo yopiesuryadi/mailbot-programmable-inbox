@@ -47,6 +47,10 @@ Environment:
 - `replay_event`: replay an event notification to a target URL
 - `get_usage`: inspect usage data for the account
 - `get_engagement_stats`: inspect delivery and engagement summaries
+- `add_domain`: add a custom domain for sending
+- `verify_domain`: trigger DNS verification for a domain
+- `connect_cloudflare`: auto-provision SPF/DKIM/DMARC via Cloudflare API (only needs API token, zone auto-detected)
+- `list_domains`: list all domains for the account
 
 ## Example Prompts
 
@@ -60,6 +64,10 @@ List the latest messages in inbox inbox_123 and summarize any inbound replies.
 
 ```text
 Replay the latest event from this thread to https://example.com/debug-webhook.
+```
+
+```text
+Add my domain example.com, connect it to Cloudflare using my API token, wait for verification, then create an inbox support@example.com.
 ```
 
 ## Practical Note
