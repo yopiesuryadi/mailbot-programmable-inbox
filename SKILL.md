@@ -358,7 +358,7 @@ Python:
 usage = client.usage.get()
 ```
 
-Sandbox limits: 250 messages/day, 25/minute burst guard.
+Sandbox limits: 200 emails/month, 25/minute burst guard. Builder: 10K/month, 1K/day. Growth: 100K/month, 5K/day.
 
 ## Security: Prompt Injection Protection
 

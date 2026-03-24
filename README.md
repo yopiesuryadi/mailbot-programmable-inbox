@@ -12,6 +12,8 @@ Works with Claude Code, Cursor, Codex, Windsurf, Copilot, Cline, Roo Code, and [
 
 ## What's New
 
+**v0.4.0** — Cloudflare DNS auto-connect: provide an API token, mailbot creates SPF/DKIM/DMARC records automatically (zone auto-detected). Pricing enforcement live — daily send limits, attachment size limits, webhook endpoint limits, data retention per plan. 3-tier abuse scanning with PhishTank, content scoring, and spray detection.
+
 **v0.3.0** — Custom domain management via API (add, verify SPF/DKIM/DMARC, delete). New `/connect` integration guide in dashboard with step-by-step setup for cURL, Node.js, Python, and MCP Server.
 
 **v0.2.0** — Skill published on [Agent Skills](https://agentskills.io) open standard. One-command install for 40+ agents. MCP Server with 12 tools. Node.js and Python SDK.
@@ -133,7 +135,7 @@ Then tell Claude:
 
 > Create an inbox for support, send a welcome email to customer@example.com, then show me the thread.
 
-12 tools: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`.
+16 tools: `create_inbox`, `list_inboxes`, `get_inbox`, `send_message`, `list_messages`, `get_message`, `reply_to_message`, `list_threads`, `get_thread`, `replay_event`, `get_usage`, `get_engagement_stats`, `add_domain`, `verify_domain`, `connect_cloudflare`, `list_domains`.
 
 ### Other agents
 
@@ -159,7 +161,7 @@ git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <skills
 
 ## API at a glance
 
-12 endpoint categories, all under `/v1`:
+All under `/v1`:
 
 | Category | What it does |
 |----------|-------------|
@@ -173,7 +175,7 @@ git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <skills
 | **Compliance** | DNS readiness checks |
 | **Audit** | Full event log |
 
-Sandbox: 250 messages/day, 25/minute burst. Custom domain unlocks higher limits.
+Sandbox: 200 emails/month, 25/minute burst. Custom domain unlocks higher limits.
 
 Full reference in [SKILL.md](SKILL.md) · [API Docs](https://getmail.bot/docs)
 
