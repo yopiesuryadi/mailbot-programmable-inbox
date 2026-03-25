@@ -165,17 +165,18 @@ All under `/v1`:
 
 | Category | What it does |
 |----------|-------------|
-| **Auth** | OTP signup → API key (no credit card) |
+| **Auth** | OTP signup or one-step register → API key (no credit card) |
 | **Inboxes** | Create, list, update, delete |
 | **Messages** | Send, list, get, reply, search, label, wait-for |
 | **Threads** | Full conversation timeline |
 | **Domains** | Add custom domain, verify SPF/DKIM/DMARC |
 | **Webhooks** | Real-time events, SSRF-protected |
+| **Realtime** | SSE streaming for live inbox/account events |
 | **Engagement** | Delivery, open, click, bounce rates |
 | **Compliance** | DNS readiness checks |
 | **Audit** | Full event log |
 
-Sandbox: 200 emails/month, 25/minute burst. Custom domain unlocks higher limits.
+Sandbox: 2 inboxes, 200 emails/month, 25/minute burst. Builder ($29/mo): 25 inboxes, 10K emails. Growth ($149/mo): 100 inboxes, 100K emails.
 
 Full reference in [SKILL.md](SKILL.md) · [API Docs](https://getmail.bot/docs)
 

@@ -87,9 +87,18 @@ mailbot uses email-based OTP signup with API key authentication.
 
 ### Signup flow
 
+Two paths exist:
+
+**OTP flow (dashboard signup):**
+
 1. `POST /v1/auth/signup` with name and email — sends a 6-digit verification code
 2. `POST /v1/auth/verify` with email and code — returns account details + API key (`mb_` prefix)
 3. Use the API key as Bearer token for all subsequent requests
+
+**One-step register (API-first):**
+
+1. `POST /v1/auth/register` with email — creates account, auto-provisions sandbox inbox, returns API key
+2. Use the API key as Bearer token for all subsequent requests
 
 Node.js:
 
@@ -313,6 +322,40 @@ const threadEvents = await client.events.list(threadId);
 await client.events.replay(threadEvents.data[0].id, 'https://example.com/replay-target');
 ```
 
+## Realtime Streaming (SSE)
+
+For agents that need live updates without polling, mailbot provides Server-Sent Events (SSE) endpoints:
+
+- `GET /v1/realtime/stream` — stream all events for the authenticated account
+- `GET /v1/inboxes/:id/stream` — stream events for a specific inbox
+
+Events emitted:
+
+- `connected` — SSE connection established
+- `message.sent` — outbound message dispatched
+- `message.received` — inbound message arrived
+- `message.delivered` — delivery confirmed
+- `message.opened` — recipient opened the email
+- `message.clicked` — recipient clicked a link
+- `message.bounced` — delivery bounced
+- `message.complained` — recipient marked as spam
+
+Node.js:
+
+```ts
+const eventSource = new EventSource(
+  'https://getmail.bot/v1/realtime/stream',
+  { headers: { Authorization: `Bearer ${apiKey}` } }
+);
+
+eventSource.addEventListener('message.received', (event) => {
+  const data = JSON.parse(event.data);
+  console.log('New inbound message:', data.message_id);
+});
+```
+
+Use SSE when the agent needs to react immediately. Use webhooks when a separate service needs to be notified.
+
 ## Engagement Tracking
 
 Per-message engagement tracking is built in:
@@ -358,7 +401,13 @@ Python:
 usage = client.usage.get()
 ```
 
-Sandbox limits: 200 emails/month, 25/minute burst guard. Builder: 10K/month, 1K/day. Growth: 100K/month, 5K/day.
+| Tier | Inboxes | Emails/month | Burst | Custom domains |
+|------|---------|-------------|-------|----------------|
+| Sandbox | 2 | 200 | 25/min | 0 (mailbot.id only) |
+| Builder ($29/mo) | 25 | 10,000 | 1K/day | 3 |
+| Growth ($149/mo) | 100 | 100,000 | 5K/day | 10 |
+
+Annual billing: 20% off (Builder $23/mo, Growth $119/mo).
 
 ## Security: Prompt Injection Protection
 
@@ -579,7 +628,7 @@ readiness = client.compliance.readiness(inbox["id"])
 
 | Category | Endpoints |
 |----------|-----------|
-| Auth | `POST /auth/signup`, `POST /auth/verify` |
+| Auth | `POST /auth/signup`, `POST /auth/verify`, `POST /auth/register` |
 | Account | `GET /account`, `PATCH /account`, `DELETE /account` |
 | API Keys | `POST /api-keys`, `GET /api-keys`, `DELETE /api-keys/:id` |
 | Inboxes | `POST /inboxes`, `GET /inboxes`, `GET /inboxes/:id`, `PATCH /inboxes/:id`, `DELETE /inboxes/:id` |
@@ -587,6 +636,7 @@ readiness = client.compliance.readiness(inbox["id"])
 | Messages | `POST /inboxes/:id/messages`, `GET /inboxes/:id/messages`, `GET /inboxes/:id/messages/:msgId` |
 | Threads | `GET /inboxes/:id/threads`, `GET /inboxes/:id/threads/:threadId` |
 | Webhooks | `POST /webhooks`, `GET /webhooks`, `DELETE /webhooks/:id` |
+| Realtime | `GET /realtime/stream`, `GET /inboxes/:id/stream` (SSE) |
 | Engagement | `GET /engagement/stats` |
 | Compliance | `GET /compliance/check`, `GET /compliance/readiness/:inboxId` |
 | Audit | `GET /audit` |
