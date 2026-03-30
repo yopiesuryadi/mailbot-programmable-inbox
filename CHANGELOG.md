@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.0
+
+- Added 5 copy-paste examples: support bot (TS + Python), CI email test, webhook handler, send with attachment.
+- Webhook event reference with payload docs for all 7 event types.
+- `.env.example` for quick setup.
+- README updated with Examples, Environment Variables, and Webhook Events sections.
+
 ## v0.4.0
 
 - Cloudflare DNS auto-connect: provide an API token and mailbot creates SPF/DKIM/DMARC records automatically (zone auto-detected from domain name).

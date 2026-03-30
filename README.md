@@ -12,6 +12,8 @@ Works with Claude Code, Cursor, Codex, Windsurf, Copilot, Cline, Roo Code, and [
 
 ## What's New
 
+**v0.5.0** — 5 copy-paste examples (support bot, CI test, webhook handler, attachments), webhook event reference with payload docs, `.env.example` for quick setup.
+
 **v0.4.0** — Cloudflare DNS auto-connect: provide an API token, mailbot creates SPF/DKIM/DMARC records automatically (zone auto-detected). Pricing enforcement live — daily send limits, attachment size limits, webhook endpoint limits, data retention per plan. 3-tier abuse scanning with PhishTank, content scoring, and spray detection.
 
 **v0.3.0** — Custom domain management via API (add, verify SPF/DKIM/DMARC, delete). New `/connect` integration guide in dashboard with step-by-step setup for cURL, Node.js, Python, and MCP Server.
