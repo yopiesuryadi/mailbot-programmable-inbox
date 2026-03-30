@@ -147,6 +147,43 @@ git clone https://github.com/yopiesuryadi/mailbot-programmable-inbox.git <skills
 
 ---
 
+## Examples
+
+Ready-to-run code in the [`examples/`](examples/) folder:
+
+| File | What it does |
+|------|-------------|
+| [`support-bot.ts`](examples/support-bot.ts) | Receive inbound email, classify intent, auto-reply in thread |
+| [`support-bot.py`](examples/support-bot.py) | Python equivalent of the support bot |
+| [`ci-email-test.ts`](examples/ci-email-test.ts) | Create inbox, send, wait for reply, assert content — for CI/CD |
+| [`webhook-handler.ts`](examples/webhook-handler.ts) | Express server handling all webhook event types |
+| [`send-with-attachment.ts`](examples/send-with-attachment.ts) | Send an email with a base64-encoded file attachment |
+
+All TypeScript examples run with `npx tsx`. Python examples need Python 3.9+.
+
+---
+
+## Environment Variables
+
+Copy [`.env.example`](.env.example) to `.env` and fill in your key:
+
+```bash
+MAILBOT_API_KEY=mb_your_key_here
+MAILBOT_BASE_URL=https://getmail.bot
+```
+
+Get your API key at [getmail.bot](https://getmail.bot) — email OTP, no credit card.
+
+---
+
+## Webhook Events
+
+Full reference for all webhook event types — payloads, when they fire, and common use cases — in [`references/webhook-events.md`](references/webhook-events.md).
+
+Events: `message.inbound`, `message.delivered`, `message.bounced`, `message.opened`, `message.clicked`, `message.complained`, `webhook.failed`.
+
+---
+
 ## What people build with this
 
 **Support automation** — Receive email → classify with LLM → reply in-thread. No ticket system for v1.
