@@ -188,7 +188,7 @@ Get your API key at [getmail.bot](https://getmail.bot): email code, no credit ca
 
 Full reference for all webhook event types: payloads, when they fire, and common use cases, in [`references/webhook-events.md`](references/webhook-events.md).
 
-Events: `message.inbound`, `message.delivered`, `message.bounced`, `message.opened`, `message.clicked`, `message.complained`, `webhook.failed`.
+Events: `message.sent`, `message.received` (delivery, open, click and bounce are on the realtime stream and on the message state, not on webhooks).
 
 ---
 

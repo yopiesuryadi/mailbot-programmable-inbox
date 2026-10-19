@@ -100,7 +100,7 @@ thread = client.threads.get(inbox["id"], sent["thread_id"])
 ```python
 webhook = client.webhooks.create(
     url="https://example.com/webhooks/mailbot",
-    events=["delivered", "opened", "clicked", "bounced"],
+    events=["message.sent", "message.received"],
 )
 
 webhooks = client.webhooks.list()

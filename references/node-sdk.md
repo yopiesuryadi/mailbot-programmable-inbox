@@ -108,7 +108,7 @@ const thread = await client.threads.get(inbox.id, sent.thread_id);
 ```ts
 const webhook = await client.webhooks.create({
   url: 'https://example.com/webhooks/mailbot',
-  events: ['delivered', 'opened', 'clicked', 'bounced'],
+  events: ['message.sent', 'message.received'],
 });
 
 const webhooks = await client.webhooks.list();

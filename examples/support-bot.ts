@@ -73,7 +73,7 @@ app.post('/webhooks/mailbot', async (req, res) => {
   const event = req.body;
 
   // Only process inbound messages
-  if (event.type !== 'message.inbound') {
+  if (event.event !== 'message.received') {
     res.sendStatus(200);
     return;
   }
@@ -113,5 +113,5 @@ const PORT = process.env.PORT ?? 3000;
 app.listen(PORT, () => {
   console.log(`Support bot listening on port ${PORT}`);
   console.log(`Webhook URL: https://your-domain.com/webhooks/mailbot`);
-  console.log(`Register this URL with: client.webhooks.create({ url, events: ['message.inbound'] })`);
+  console.log(`Register this URL with: client.webhooks.create({ url, events: ['message.received'] })`);
 });

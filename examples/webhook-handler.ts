@@ -1,140 +1,89 @@
 /**
  * webhook-handler.ts
  *
- * An Express server that receives and processes mailbot webhook events.
- * Handles different event types with appropriate logic for each.
+ * An Express server that verifies and handles mailbot webhook events.
+ * Matches what the server sends as of October 2026: two events,
+ * an `event` field in the envelope, and an HMAC-SHA256 hex signature
+ * over the raw body in `X-Mailbot-Signature`.
  *
- * Run: npx tsx examples/webhook-handler.ts
+ * Run: MAILBOT_WEBHOOK_SECRET=... npx tsx examples/webhook-handler.ts
  *
  * Prerequisites:
  *   npm install express
  *   npm install -D @types/express
  *
  * Register your webhook URL with mailbot:
- *   client.webhooks.create({
+ *   const wh = await client.webhooks.create({
  *     url: 'https://your-domain.com/webhooks/mailbot',
- *     events: ['message.inbound', 'message.delivered', 'message.bounced',
- *              'message.opened', 'message.clicked', 'message.complained'],
+ *     events: ['message.sent', 'message.received'],
  *   });
+ *   // wh.secret is shown once. Put it in MAILBOT_WEBHOOK_SECRET.
  *
- * Webhook event types:
+ * Events delivered to webhooks today:
+ *   message.received   An inbound email arrived in one of your inboxes.
+ *   message.sent       An outbound message was accepted and handed to the sender.
  *
- *   message.inbound     — A new email was received in your inbox.
- *   message.delivered    — Your outbound email was delivered to the recipient's mail server.
- *   message.bounced      — Delivery failed (hard bounce or soft bounce after retries).
- *   message.opened       — The recipient opened the email (via tracking pixel).
- *   message.clicked      — The recipient clicked a link in the email.
- *   message.complained   — The recipient marked the email as spam.
- *   webhook.failed       — A previous webhook delivery attempt failed (retry exhausted).
+ * Delivery, open, click and bounce are on the realtime stream and on the
+ * message itself (get_message), not on webhooks.
  */
 
+import crypto from 'crypto';
 import express, { Request, Response } from 'express';
 
+const SECRET = process.env.MAILBOT_WEBHOOK_SECRET ?? '';
 const app = express();
-app.use(express.json());
 
-// --- Event handlers ---
+type Envelope = {
+  event: 'message.sent' | 'message.received' | string;
+  event_id: string;
+  delivery_attempt: number;
+  timestamp: string;
+  data: Record<string, unknown>;
+};
 
-function handleInbound(data: Record<string, unknown>): void {
-  console.log(`New inbound email from ${data.from_address}`);
-  console.log(`  Subject: ${data.subject}`);
-  console.log(`  Message ID: ${data.message_id}`);
-  console.log(`  Thread ID: ${data.thread_id}`);
-  // Add your logic here: classify, auto-reply, forward, etc.
+const seen = new Set<string>(); // replace with your store; event_id is the idempotency key
+
+function verify(rawBody: Buffer, signature: string): boolean {
+  const expected = crypto.createHmac('sha256', SECRET).update(rawBody).digest('hex');
+  if (expected.length !== signature.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
 
-function handleDelivered(data: Record<string, unknown>): void {
-  console.log(`Email delivered: ${data.message_id}`);
-  console.log(`  To: ${data.to_address}`);
-  console.log(`  Delivered at: ${data.delivered_at}`);
-  // Update your delivery tracking, mark as delivered in your DB, etc.
+function handleReceived(data: Record<string, unknown>): void {
+  console.log(`Inbound from ${data.from_address}: ${data.subject}`);
+  console.log(`  message ${data.id} in thread ${data.thread_id}`);
+  // Classify, reply in thread with client.messages.reply(...), forward, etc.
 }
 
-function handleBounced(data: Record<string, unknown>): void {
-  console.error(`Email bounced: ${data.message_id}`);
-  console.error(`  To: ${data.to_address}`);
-  console.error(`  Bounce type: ${data.bounce_type}`);
-  console.error(`  Reason: ${data.bounce_reason}`);
-  // Remove bad addresses, alert your team, retry with alternate address, etc.
+function handleSent(data: Record<string, unknown>): void {
+  console.log(`Outbound ${data.id} handed to sender, delivery_status=${data.delivery_status}`);
+  // Mark as sent on your side. Delivery is a separate state: read it with get_message.
 }
 
-function handleOpened(data: Record<string, unknown>): void {
-  console.log(`Email opened: ${data.message_id}`);
-  console.log(`  Opened at: ${data.opened_at}`);
-  console.log(`  Open count: ${data.opened_count}`);
-  // Track engagement, trigger follow-up if first open, etc.
-}
-
-function handleClicked(data: Record<string, unknown>): void {
-  console.log(`Link clicked: ${data.message_id}`);
-  console.log(`  URL: ${data.clicked_url}`);
-  console.log(`  Clicked at: ${data.clicked_at}`);
-  // Track link engagement, personalize follow-up based on interest, etc.
-}
-
-function handleComplained(data: Record<string, unknown>): void {
-  console.warn(`Spam complaint: ${data.message_id}`);
-  console.warn(`  From: ${data.to_address}`);
-  // Immediately suppress this address, review sending patterns, etc.
-}
-
-function handleWebhookFailed(data: Record<string, unknown>): void {
-  console.error(`Webhook delivery failed`);
-  console.error(`  Original event: ${data.original_event_type}`);
-  console.error(`  Target URL: ${data.target_url}`);
-  console.error(`  Failure reason: ${data.failure_reason}`);
-  // Alert ops team, check endpoint health, etc.
-}
-
-// --- Webhook endpoint ---
-
-app.post('/webhooks/mailbot', (req: Request, res: Response) => {
-  const event = req.body;
-  const { type, data, timestamp } = event;
-
-  console.log(`[${timestamp}] Event: ${type}`);
-
-  switch (type) {
-    case 'message.inbound':
-      handleInbound(data);
-      break;
-    case 'message.delivered':
-      handleDelivered(data);
-      break;
-    case 'message.bounced':
-      handleBounced(data);
-      break;
-    case 'message.opened':
-      handleOpened(data);
-      break;
-    case 'message.clicked':
-      handleClicked(data);
-      break;
-    case 'message.complained':
-      handleComplained(data);
-      break;
-    case 'webhook.failed':
-      handleWebhookFailed(data);
-      break;
-    default:
-      console.log(`Unhandled event type: ${type}`);
+app.post('/webhooks/mailbot', express.raw({ type: 'application/json' }), (req: Request, res: Response) => {
+  const signature = req.get('X-Mailbot-Signature') ?? '';
+  if (!verify(req.body as Buffer, signature)) {
+    res.status(401).send('bad signature');
+    return;
   }
 
-  // Always respond 200 quickly to acknowledge receipt.
-  // If you return a non-2xx, mailbot will retry the webhook.
+  // Answer first, work after. The server waits at most 30 seconds.
   res.sendStatus(200);
+
+  const envelope = JSON.parse((req.body as Buffer).toString('utf8')) as Envelope;
+  if (seen.has(envelope.event_id)) return; // a retry of something we already handled
+  seen.add(envelope.event_id);
+
+  switch (envelope.event) {
+    case 'message.received':
+      handleReceived(envelope.data);
+      break;
+    case 'message.sent':
+      handleSent(envelope.data);
+      break;
+    default:
+      console.log(`Unhandled event: ${envelope.event}`);
+  }
 });
 
-// --- Health check ---
-
-app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok' });
-});
-
-// --- Start server ---
-
-const PORT = process.env.PORT ?? 3001;
-
-app.listen(PORT, () => {
-  console.log(`Webhook handler listening on port ${PORT}`);
-});
+app.listen(3000, () => console.log('Listening on http://localhost:3000/webhooks/mailbot'));

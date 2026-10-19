@@ -74,7 +74,7 @@ def handle_webhook():
     event = request.get_json()
 
     # Only process inbound messages
-    if event.get("type") != "message.inbound":
+    if event.get("event") != "message.received":
         return "", 200
 
     data = event["data"]
@@ -112,5 +112,5 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
     print(f"Support bot listening on port {port}")
     print("Webhook URL: https://your-domain.com/webhooks/mailbot")
-    print('Register this URL with: client.webhooks.create(url=..., events=["message.inbound"])')
+    print('Register this URL with: client.webhooks.create(url=..., events=["message.received"])')
     app.run(host="0.0.0.0", port=port)
