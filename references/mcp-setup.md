@@ -3,13 +3,13 @@
 Install:
 
 ```bash
-npm install -g @yopiesuryadi/mailbot-mcp
+npm install -g mailbot-mcp
 ```
 
 Alternative:
 
 ```bash
-npx @yopiesuryadi/mailbot-mcp
+npx mailbot-mcp
 ```
 
 Environment:
@@ -24,7 +24,7 @@ Environment:
   "mcpServers": {
     "mailbot": {
       "command": "npx",
-      "args": ["@yopiesuryadi/mailbot-mcp"],
+      "args": ["mailbot-mcp"],
       "env": {
         "MAILBOT_API_KEY": "mb_..."
       }
@@ -35,22 +35,28 @@ Environment:
 
 ## Included Tools
 
-- `create_inbox`: create a new inbox
-- `list_inboxes`: list inboxes for the account
-- `get_inbox`: fetch one inbox
-- `send_message`: send an outbound message
-- `list_messages`: list inbox messages
-- `get_message`: fetch one message
-- `reply_to_message`: reply while preserving thread continuity
-- `list_threads`: list inbox threads
-- `get_thread`: fetch a thread and its messages
-- `replay_event`: replay an event notification to a target URL
-- `get_usage`: inspect usage data for the account
-- `get_engagement_stats`: inspect delivery and engagement summaries
-- `add_domain`: add a custom domain for sending
-- `verify_domain`: trigger DNS verification for a domain
-- `connect_cloudflare`: auto-provision SPF/DKIM/DMARC via Cloudflare API (only needs API token, zone auto-detected)
-- `list_domains`: list all domains for the account
+12 tools, read from the package source. Parameters marked `?` are optional.
+
+| Tool | What it does | Parameters |
+|---|---|---|
+| `create_inbox` | Create an inbox for sending and receiving | `username`, `display_name?`, `domain?` |
+| `list_inboxes` | List inboxes in the account | `page?`, `limit?` |
+| `get_inbox` | Get one inbox | `inbox_id` |
+| `send_message` | Send an email from an inbox | `inbox_id`, `to[]`, `subject`, `body`, `cc[]?`, `bcc[]?` |
+| `reply_to_message` | Reply in the same thread | `inbox_id`, `message_id`, `body` |
+| `list_messages` | List messages in an inbox | `inbox_id`, `since?`, `limit?`, `page?` |
+| `get_message` | Get one message with its state | `inbox_id`, `message_id` |
+| `list_threads` | List conversations in an inbox | `inbox_id`, `limit?`, `page?` |
+| `get_thread` | Get a thread with all its messages | `inbox_id`, `thread_id` |
+| `replay_event` | Send a webhook event again | `event_id`, `target_url?` |
+| `get_engagement_stats` | Opens, clicks and bounces | `inbox_id?`, `period?` |
+| `get_usage` | Outbound emails used this month | none |
+
+Rules for agents:
+
+- Report an email as delivered only when `get_message` shows it delivered.
+- If a call times out, check with `get_message` or `list_messages` before sending again.
+- `get_engagement_stats` returns `no_data` when tracking is off. Do not read that as zero opens.
 
 ## Example Prompts
 

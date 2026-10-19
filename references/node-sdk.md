@@ -33,7 +33,7 @@ await client.account.update({ name: 'New Name' });
 
 ```ts
 const newKey = await client.apiKeys.create({ name: 'ci-pipeline' });
-console.log(newKey.key); // mb_... — only shown once
+console.log(newKey.key); // mb_..., only shown once
 const keys = await client.apiKeys.list();
 await client.apiKeys.delete(keys.data[0].id);
 ```
