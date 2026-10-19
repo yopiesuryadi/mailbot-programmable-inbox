@@ -2,6 +2,8 @@
 
 Your agent can email people now. Give it an inbox, send, read the replies in the same thread, and check what happened to every email. You only open the dashboard to pay.
 
+Chat apps are changing their rules for business AI. From October 1, 2026, WhatsApp Business bills every service message past 1,000 a month per business number, automated replies included ([source](https://techweez.com/2026/09/28/whatsapp-business-pricing-october-2026/)). Since January 15, 2026, open-ended AI assistants are not allowed on its Business API at all ([source](https://respond.io/blog/whatsapp-general-purpose-chatbots-ban)). Email has no single owner: your agent keeps its own address, its own threads, and its own limits.
+
 ```bash
 npx skills add yopiesuryadi/mailbot-programmable-inbox
 ```
