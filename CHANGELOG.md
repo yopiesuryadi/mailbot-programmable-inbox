@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.0
+
+- Identity: mailbot is email for AI agents. The dashboard is only for paying and API keys; everything else happens through the API and the MCP server.
+- MCP package name corrected to `mailbot-mcp` (npm). Tool list corrected to the 12 tools the package actually ships, with parameters.
+- Sandbox limits corrected to what the API enforces: 5 inboxes, 1,000 outbound emails a month, verified recipients only.
+- Removed comparisons with other providers and an unsourced deliverability figure.
+
 ## v0.5.0
 
 - Added 5 copy-paste examples: support bot (TS + Python), CI email test, webhook handler, send with attachment.

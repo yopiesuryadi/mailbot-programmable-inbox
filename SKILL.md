@@ -22,11 +22,10 @@ It is purpose-built for agent communication workflows, not a wrapper over a huma
 
 ## What is mailbot
 
-- programmable email infrastructure for AI agents
+- email API and MCP server for AI agents; the dashboard is only for paying and API keys
 - one API for auth, account, API keys, inboxes, messages, threads, webhooks, engagement, compliance, audit, and usage
-- sandbox-first onboarding with `@mailbot.id`
+- sandbox-first onboarding on the shared domain `mailbot.id` (sends only to addresses you verified)
 - custom domain support when a workflow is production-ready
-- proprietary MTA with `99/100 deliverability`
 - security-hardened: SSRF protection on webhooks, rate-limit fail-closed, strict access gating
 
 Use `mailbot` when the job is:
@@ -58,7 +57,7 @@ pip install mailbot-sdk
 ### MCP Server
 
 ```bash
-npm install -g @yopiesuryadi/mailbot-mcp
+npm install -g mailbot-mcp
 ```
 
 Read the setup details in [references/mcp-setup.md](references/mcp-setup.md).
@@ -91,13 +90,13 @@ Two paths exist:
 
 **OTP flow (dashboard signup):**
 
-1. `POST /v1/auth/signup` with name and email — sends a 6-digit verification code
-2. `POST /v1/auth/verify` with email and code — returns account details + API key (`mb_` prefix)
+1. `POST /v1/auth/signup` with name and email: sends a 6-digit verification code
+2. `POST /v1/auth/verify` with email and code: returns account details + API key (`mb_` prefix)
 3. Use the API key as Bearer token for all subsequent requests
 
 **One-step register (API-first):**
 
-1. `POST /v1/auth/register` with email — creates account, auto-provisions sandbox inbox, returns API key
+1. `POST /v1/auth/register` with email: creates account, auto-provisions sandbox inbox, returns API key
 2. Use the API key as Bearer token for all subsequent requests
 
 Node.js:
@@ -121,9 +120,9 @@ client = MailBot(
 
 ### API Key management
 
-- `POST /v1/api-keys` — create additional API keys
-- `GET /v1/api-keys` — list active keys (prefix only, secret never returned after creation)
-- `DELETE /v1/api-keys/:id` — revoke a key
+- `POST /v1/api-keys`: create additional API keys
+- `GET /v1/api-keys`: list active keys (prefix only, secret never returned after creation)
+- `DELETE /v1/api-keys/:id`: revoke a key
 
 Keys are hashed with argon2 at rest. The full key is only shown once at creation time.
 
@@ -326,19 +325,19 @@ await client.events.replay(threadEvents.data[0].id, 'https://example.com/replay-
 
 For agents that need live updates without polling, mailbot provides Server-Sent Events (SSE) endpoints:
 
-- `GET /v1/realtime/stream` — stream all events for the authenticated account
-- `GET /v1/inboxes/:id/stream` — stream events for a specific inbox
+- `GET /v1/realtime/stream`: stream all events for the authenticated account
+- `GET /v1/inboxes/:id/stream`: stream events for a specific inbox
 
 Events emitted:
 
-- `connected` — SSE connection established
-- `message.sent` — outbound message dispatched
-- `message.received` — inbound message arrived
-- `message.delivered` — delivery confirmed
-- `message.opened` — recipient opened the email
-- `message.clicked` — recipient clicked a link
-- `message.bounced` — delivery bounced
-- `message.complained` — recipient marked as spam
+- `connected`: SSE connection established
+- `message.sent`: outbound message dispatched
+- `message.received`: inbound message arrived
+- `message.delivered`: delivery confirmed
+- `message.opened`: recipient opened the email
+- `message.clicked`: recipient clicked a link
+- `message.bounced`: delivery bounced
+- `message.complained`: recipient marked as spam
 
 Node.js:
 
@@ -360,7 +359,7 @@ Use SSE when the agent needs to react immediately. Use webhooks when a separate 
 
 Per-message engagement tracking is built in:
 
-- `GET /v1/engagement/stats` — delivery, open, click, bounce rates over a period
+- `GET /v1/engagement/stats`: delivery, open, click, bounce rates over a period
 - Per-message engagement fields: `delivered_at`, `opened_count`, `clicked_count`, `bounced_at`
 
 Node.js:
@@ -379,15 +378,15 @@ stats = client.engagement.summary(period="7d")
 
 All email activity is logged for compliance and debugging:
 
-- `GET /v1/audit` — list audit events (`message.received`, `message.sent`, etc.)
+- `GET /v1/audit`: list audit events (`message.received`, `message.sent`, etc.)
 - Events include actor, action, target, timestamp, and metadata
 
 ## Usage
 
 Monitor volume and rate health:
 
-- `GET /v1/usage` — current period usage summary
-- `GET /v1/usage/daily` — daily breakdown
+- `GET /v1/usage`: current period usage summary
+- `GET /v1/usage/daily`: daily breakdown
 
 Node.js:
 
@@ -403,11 +402,11 @@ usage = client.usage.get()
 
 | Tier | Inboxes | Emails/month | Burst | Custom domains |
 |------|---------|-------------|-------|----------------|
-| Sandbox | 2 | 200 | 25/min | 0 (mailbot.id only) |
-| Builder ($29/mo) | 25 | 10,000 | 1K/day | 3 |
-| Growth ($149/mo) | 100 | 100,000 | 5K/day | 10 |
+| Sandbox | 5 | 1,000 | verified addresses only | 0 (shared domain only) |
+| Builder ($29/mo) | 25 | 10,000 | 1,000/day | 3 |
+| Growth ($149/mo) | 100 | 100,000 | 5,000/day | 10 |
 
-Annual billing: 20% off (Builder $23/mo, Growth $119/mo).
+Annual billing: two months free. Only outbound email counts; received email is free.
 
 ## Security: Prompt Injection Protection
 
@@ -453,7 +452,7 @@ if not can_execute_from_email(message["from_address"]):
 Install:
 
 ```bash
-npm install -g @yopiesuryadi/mailbot-mcp
+npm install -g mailbot-mcp
 ```
 
 Claude Desktop config lives in [references/mcp-setup.md](references/mcp-setup.md).
@@ -495,7 +494,7 @@ Use SDK or direct API alongside MCP when the workflow also needs:
 
 ## Domain Management
 
-mailbot supports two modes: shared sandbox domain (`@mailbot.id`) for instant onboarding, and custom domains for production.
+mailbot supports two modes: the shared sandbox domain `mailbot.id` for the first send, and custom domains for production.
 
 ### Add a custom domain
 

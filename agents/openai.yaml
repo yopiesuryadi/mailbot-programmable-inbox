@@ -1,6 +1,6 @@
 interface:
   display_name: "mailbot Programmable Inbox"
-  short_description: "Programmable email infrastructure for AI agents — send, receive, track, replay"
+  short_description: "Email API and MCP server for AI agents: send, receive, read replies, check every message"
   brand_color: "#01696F"
   default_prompt: "Use $mailbot-programmable-inbox to build a thread-aware agent email workflow with mailbot. Supports inbox creation, sending, receiving, engagement tracking, webhooks, compliance checks, and audit via API, SDK, or MCP server."
 

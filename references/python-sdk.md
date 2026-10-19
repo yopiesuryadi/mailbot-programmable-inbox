@@ -33,7 +33,7 @@ client.account.update(name="New Name")
 
 ```python
 new_key = client.api_keys.create(name="ci-pipeline")
-print(new_key["key"])  # mb_... — only shown once
+print(new_key["key"])  # mb_..., only shown once
 keys = client.api_keys.list()
 client.api_keys.delete(keys["data"][0]["id"])
 ```
